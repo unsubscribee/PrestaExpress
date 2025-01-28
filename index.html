@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desuscripción</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f5f5f5; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); text-align: center; max-width: 400px; width: 100%; }
+        h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+        p { margin-bottom: 1.5rem; color: #666; }
+        .options { margin-bottom: 1rem; }
+        input[type="email"] { width: 100%; padding: 0.5rem; margin: 1rem 0; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        button { background-color: #007bff; color: white; border: none; padding: 0.75rem 1.5rem; font-size: 1rem; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .message { margin-top: 1rem; font-size: 1rem; color: green; font-weight: bold; }
+        .error { color: red; font-size: 0.9rem; margin-top: 1rem; }
+    </style>
+</head>
+
+
+<body>
+
+    <div class="container">
+        <h1>¿Desea desuscribirse?</h1>
+        <p>Por favor, ingrese su correo electrónico para desuscribirse:</p>
+        <div class="options">
+            <label for="yes">Sí</label>
+            <input type="radio" name="unsubscribe" id="yes" value="yes">
+            <label for="no">No</label>
+            <input type="radio" name="unsubscribe" id="no" value="no">
+        </div>
+        <input type="email" id="email" placeholder="Correo electrónico" required disabled>
+        <div id="message"></div>
+        <div id="error-message" class="error"></div>
+        <button id="submit" disabled>Enviar</button>
+    </div>
+	
+
+    <script>
+        const yesRadio = document.getElementById('yes');
+        const noRadio = document.getElementById('no');
+        const emailInput = document.getElementById('email');
+        const submitButton = document.getElementById('submit');
+        const messageDiv = document.getElementById('message');
+        const errorDiv = document.getElementById('error-message');
+
+        yesRadio.addEventListener('change', function () {
+            emailInput.disabled = false;
+            submitButton.disabled = false;
+            errorDiv.textContent = '';
+            messageDiv.textContent = '';
+        });
+
+        noRadio.addEventListener('change', function () {
+            emailInput.disabled = true;
+            submitButton.disabled = true;
+            messageDiv.textContent = '¡Gracias por su respuesta!';
+        });
+
+        submitButton.addEventListener('click', async function () {
+            const email = emailInput.value;
+
+            if (email === '') {
+                errorDiv.textContent = 'Por favor, ingrese su correo electrónico.';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/save-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageDiv.textContent = '¡Gracias! Su desuscripción ha sido procesada.';
+                    errorDiv.textContent = '';
+                } else {
+                    errorDiv.textContent = result.error || 'Ocurrió un problema.';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Error al enviar su solicitud. Intente más tarde.';
+            }
+        });
+    </script>
+</body>
+</html>
